@@ -7,6 +7,7 @@ import {
   addDoc,
   arrayUnion,
   collection,
+  deleteDoc,
   doc,
   getDoc,
   onSnapshot,
@@ -28,6 +29,16 @@ type Assignment = {
   recipientPhotoURL?: string | null;
 };
 
+type CustomField = {
+  id: string;
+  label: string;
+  placeholder?: string;
+};
+
+type MemberResponse = {
+  [fieldId: string]: string;
+};
+
 type Group = {
   id: string;
   name: string;
@@ -38,6 +49,8 @@ type Group = {
   memberIds: string[];
   members: Record<string, MemberProfile>;
   assignments?: Record<string, Assignment> | null;
+  customFields?: CustomField[];
+  memberResponses?: Record<string, MemberResponse>;
   createdAt?: Timestamp | null;
   drawRunAt?: Timestamp | null;
 };
@@ -67,6 +80,8 @@ const shuffle = <T,>(items: T[]) => {
   return copy;
 };
 
+const generateFieldId = () => `field_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
 function App() {
   const [user, setUser] = useState<User | null>(null);
   const [authError, setAuthError] = useState<string | null>(null);
@@ -78,11 +93,14 @@ function App() {
 
   const [newGroupName, setNewGroupName] = useState('');
   const [newGroupDescription, setNewGroupDescription] = useState('');
+  const [customFields, setCustomFields] = useState<CustomField[]>([]);
   const [isCreatingGroup, setIsCreatingGroup] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
   const [createSuccess, setCreateSuccess] = useState<string | null>(null);
 
   const [joinCode, setJoinCode] = useState('');
+  const [joinGroupFields, setJoinGroupFields] = useState<CustomField[]>([]);
+  const [joinResponses, setJoinResponses] = useState<Record<string, string>>({});
   const [isJoining, setIsJoining] = useState(false);
   const [joinError, setJoinError] = useState<string | null>(null);
   const [joinSuccess, setJoinSuccess] = useState<string | null>(null);
@@ -90,6 +108,9 @@ function App() {
   const [isRunningDraw, setIsRunningDraw] = useState(false);
   const [drawError, setDrawError] = useState<string | null>(null);
   const [drawSuccess, setDrawSuccess] = useState<string | null>(null);
+
+  const [isDeletingGroup, setIsDeletingGroup] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -131,6 +152,8 @@ function App() {
               memberIds: data.memberIds ?? [],
               members,
               assignments,
+              customFields: (data.customFields ?? []) as CustomField[],
+              memberResponses: (data.memberResponses ?? {}) as Record<string, MemberResponse>,
               createdAt: (data.createdAt as Timestamp | undefined) ?? null,
               drawRunAt: (data.drawRunAt as Timestamp | undefined) ?? null,
             } satisfies Group;
@@ -169,7 +192,45 @@ function App() {
   useEffect(() => {
     setDrawError(null);
     setDrawSuccess(null);
+    setDeleteError(null);
   }, [selectedGroupId]);
+
+  // Load custom fields when join code changes
+  useEffect(() => {
+    const loadGroupFields = async () => {
+      const trimmedCode = joinCode.trim();
+      if (!trimmedCode || trimmedCode.length < 20) {
+        setJoinGroupFields([]);
+        setJoinResponses({});
+        return;
+      }
+
+      try {
+        const groupRef = doc(db, 'groups', trimmedCode);
+        const groupSnapshot = await getDoc(groupRef);
+        if (groupSnapshot.exists()) {
+          const data = groupSnapshot.data();
+          const fields: CustomField[] = data.customFields ?? [];
+          setJoinGroupFields(fields);
+          // Initialize responses with empty strings
+          const initialResponses: Record<string, string> = {};
+          fields.forEach((field) => {
+            initialResponses[field.id] = '';
+          });
+          setJoinResponses(initialResponses);
+        } else {
+          setJoinGroupFields([]);
+          setJoinResponses({});
+        }
+      } catch (error) {
+        console.error('Failed to load group fields', error);
+        setJoinGroupFields([]);
+        setJoinResponses({});
+      }
+    };
+
+    loadGroupFields();
+  }, [joinCode]);
 
   const handleGoogleSignIn = async () => {
     setAuthError(null);
@@ -221,12 +282,15 @@ function App() {
           },
         },
         assignments: null,
+        customFields: customFields.length > 0 ? customFields : undefined,
+        memberResponses: {},
         createdAt: serverTimestamp(),
         drawRunAt: null,
       });
 
       setNewGroupName('');
       setNewGroupDescription('');
+      setCustomFields([]);
       setCreateSuccess('Group created! Share the join code with your Santas.');
       setSelectedGroupId(docRef.id);
     } catch (error) {
@@ -273,16 +337,34 @@ function App() {
       }
 
       const memberField = `members.${user.uid}`;
+      const customFields: CustomField[] = data.customFields ?? [];
+      
+      // Validate that all custom fields have responses
+      if (customFields.length > 0) {
+        const missingFields = customFields.filter(
+          (field) => !joinResponses[field.id] || !joinResponses[field.id].trim()
+        );
+        if (missingFields.length > 0) {
+          setJoinError(`Please fill out all required fields: ${missingFields.map(f => f.label).join(', ')}`);
+          setIsJoining(false);
+          return;
+        }
+      }
+
+      const responseField = `memberResponses.${user.uid}`;
       await updateDoc(groupRef, {
         memberIds: arrayUnion(user.uid),
         [memberField]: {
           displayName: getDisplayName(user),
           photoURL: user.photoURL ?? null,
         },
+        [responseField]: joinResponses,
       });
 
       setJoinSuccess('Welcome aboard! You have joined the group.');
       setJoinCode('');
+      setJoinGroupFields([]);
+      setJoinResponses({});
       setSelectedGroupId(trimmedCode);
     } catch (error) {
       console.error('Failed to join group', error);
@@ -334,6 +416,33 @@ function App() {
       setDrawError('Something went wrong running the draw. Please try again.');
     } finally {
       setIsRunningDraw(false);
+    }
+  };
+
+  const handleDeleteGroup = async (group: Group) => {
+    if (!user || user.uid !== group.ownerId) {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Are you sure you want to delete "${group.name}"? This action cannot be undone and will remove the group for all members.`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setDeleteError(null);
+    setIsDeletingGroup(true);
+
+    try {
+      await deleteDoc(doc(db, 'groups', group.id));
+      // Group will be automatically removed from groups list via onSnapshot
+      setSelectedGroupId(null);
+    } catch (error) {
+      console.error('Failed to delete group', error);
+      setDeleteError('Unable to delete the group. Please try again.');
+      setIsDeletingGroup(false);
     }
   };
 
@@ -520,7 +629,21 @@ function App() {
                     <div className="rounded-2xl border border-emerald-500/40 bg-emerald-500/10 p-5">
                       <p className="text-sm uppercase tracking-wide text-emerald-300">Your match</p>
                       <p className="mt-2 text-2xl font-semibold text-white">{myAssignment.recipientName}</p>
-                      <p className="mt-1 text-sm text-emerald-200/80">
+                      {selectedGroup.customFields && selectedGroup.customFields.length > 0 && selectedGroup.memberResponses?.[myAssignment.recipientId] && (
+                        <div className="mt-4 space-y-2">
+                          {selectedGroup.customFields.map((field) => {
+                            const response = selectedGroup.memberResponses?.[myAssignment.recipientId]?.[field.id];
+                            if (!response) return null;
+                            return (
+                              <div key={field.id} className="text-sm">
+                                <span className="text-emerald-200/80">{field.label}:</span>{' '}
+                                <span className="text-white font-medium">{response}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                      <p className="mt-3 text-sm text-emerald-200/80">
                         Keep it secret! Only you can see this assignment.
                       </p>
                     </div>
@@ -551,11 +674,24 @@ function App() {
                             </div>
                           )}
                           <div className="flex flex-1 items-center justify-between gap-3">
-                            <div>
+                            <div className="flex-1">
                               <p className="text-sm font-medium text-white">{member.displayName}</p>
                               <p className="text-[10px] uppercase tracking-wide text-slate-500">
                                 {member.id === selectedGroup.ownerId ? 'Organizer' : 'Participant'}
                               </p>
+                              {selectedGroup.customFields && selectedGroup.customFields.length > 0 && selectedGroup.memberResponses?.[member.id] && (
+                                <div className="mt-2 space-y-1">
+                                  {selectedGroup.customFields.map((field) => {
+                                    const response = selectedGroup.memberResponses?.[member.id]?.[field.id];
+                                    if (!response) return null;
+                                    return (
+                                      <div key={field.id} className="text-xs text-slate-400">
+                                        <span className="font-medium">{field.label}:</span> {response}
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              )}
                             </div>
                             {selectedGroup.assignments?.[member.id]?.recipientName ? (
                               <span className="rounded-full bg-slate-800/80 px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
@@ -569,20 +705,42 @@ function App() {
                   </div>
 
                   {user.uid === selectedGroup.ownerId ? (
-                    <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-5">
-                      <h3 className="text-lg font-semibold text-white">Ready to draw?</h3>
-                      <p className="mt-1 text-sm text-emerald-100/80">
-                        Only you can run the draw. Everyone will immediately see who they are gifting once you launch it.
-                      </p>
-                      <button
-                        type="button"
-                        onClick={() => handleRunDraw(selectedGroup)}
-                        disabled={isRunningDraw}
-                        className="mt-4 inline-flex items-center gap-2 rounded-full bg-emerald-400/90 px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-emerald-300 disabled:cursor-not-allowed disabled:opacity-60"
-                      >
-                        {isRunningDraw ? 'Drawing names…' : 'Run the draw'}
-                      </button>
-                    </div>
+                    <>
+                      <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-5">
+                        <h3 className="text-lg font-semibold text-white">Ready to draw?</h3>
+                        <p className="mt-1 text-sm text-emerald-100/80">
+                          Only you can run the draw. Everyone will immediately see who they are gifting once you launch it.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => handleRunDraw(selectedGroup)}
+                          disabled={isRunningDraw}
+                          className="mt-4 inline-flex items-center gap-2 rounded-full bg-emerald-400/90 px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-emerald-300 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          {isRunningDraw ? 'Drawing names…' : 'Run the draw'}
+                        </button>
+                      </div>
+
+                      <div className="rounded-2xl border border-rose-500/30 bg-rose-500/5 p-5">
+                        <h3 className="text-lg font-semibold text-white">Danger zone</h3>
+                        <p className="mt-1 text-sm text-rose-100/80">
+                          Permanently delete this group. This action cannot be undone.
+                        </p>
+                        {deleteError ? (
+                          <p className="mt-3 rounded-2xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+                            {deleteError}
+                          </p>
+                        ) : null}
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteGroup(selectedGroup)}
+                          disabled={isDeletingGroup}
+                          className="mt-4 inline-flex items-center gap-2 rounded-full bg-rose-500/90 px-6 py-3 text-sm font-semibold text-white transition hover:bg-rose-400 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          {isDeletingGroup ? 'Deleting…' : 'Delete group'}
+                        </button>
+                      </div>
+                    </>
                   ) : null}
                 </div>
               ) : (
@@ -630,6 +788,67 @@ function App() {
                   </label>
                 </div>
               </div>
+              
+              {/* Custom Fields Section */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                    Custom fields (optional)
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCustomFields([...customFields, { id: generateFieldId(), label: '', placeholder: '' }]);
+                    }}
+                    className="text-xs text-emerald-400 hover:text-emerald-300 transition"
+                  >
+                    + Add field
+                  </button>
+                </div>
+                {customFields.map((field, index) => (
+                  <div key={field.id} className="flex gap-2 items-start">
+                    <div className="flex-1 space-y-2">
+                      <input
+                        type="text"
+                        value={field.label}
+                        onChange={(event) => {
+                          const updated = [...customFields];
+                          updated[index] = { ...field, label: event.target.value };
+                          setCustomFields(updated);
+                        }}
+                        placeholder="Field label (e.g., Jersey size, Avoidable clubs)"
+                        className="w-full rounded-xl border border-slate-700/80 bg-slate-900 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/40"
+                      />
+                      <input
+                        type="text"
+                        value={field.placeholder || ''}
+                        onChange={(event) => {
+                          const updated = [...customFields];
+                          updated[index] = { ...field, placeholder: event.target.value };
+                          setCustomFields(updated);
+                        }}
+                        placeholder="Placeholder text (optional)"
+                        className="w-full rounded-xl border border-slate-700/80 bg-slate-900 px-3 py-2 text-xs text-slate-300 placeholder:text-slate-600 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/40"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCustomFields(customFields.filter((_, i) => i !== index));
+                      }}
+                      className="px-3 py-2 text-xs text-slate-400 hover:text-rose-400 transition"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+                {customFields.length > 0 && (
+                  <p className="text-xs text-slate-500">
+                    Members will be asked to fill out these fields when joining the group.
+                  </p>
+                )}
+              </div>
+              
               {createError ? (
                 <p className="rounded-2xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
                   {createError}
@@ -669,6 +888,30 @@ function App() {
                   className="mt-1 w-full rounded-2xl border border-slate-700/80 bg-slate-900 px-4 py-2 text-sm text-white placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/40"
                 />
               </label>
+              
+              {/* Custom Fields for Joining */}
+              {joinGroupFields.length > 0 && (
+                <div className="space-y-3">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                    Please fill out the following:
+                  </p>
+                  {joinGroupFields.map((field) => (
+                    <label key={field.id} className="block text-xs font-semibold uppercase tracking-wide text-slate-400">
+                      {field.label}
+                      <input
+                        type="text"
+                        value={joinResponses[field.id] || ''}
+                        onChange={(event) => {
+                          setJoinResponses({ ...joinResponses, [field.id]: event.target.value });
+                        }}
+                        placeholder={field.placeholder || `Enter ${field.label.toLowerCase()}`}
+                        className="mt-1 w-full rounded-2xl border border-slate-700/80 bg-slate-900 px-4 py-2 text-sm text-white placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/40"
+                      />
+                    </label>
+                  ))}
+                </div>
+              )}
+              
               {joinError ? (
                 <p className="rounded-2xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
                   {joinError}

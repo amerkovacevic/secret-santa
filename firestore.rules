@@ -1,0 +1,87 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(groupData) {
+      return isAuthenticated() && request.auth.uid == groupData.ownerId;
+    }
+    
+    function isMember(groupData) {
+      return isAuthenticated() && request.auth.uid in groupData.memberIds;
+    }
+    
+    // Groups collection rules
+    match /groups/{groupId} {
+      // Allow read if user is authenticated
+      // (needed for joining groups, and members can read their groups via query)
+      allow read: if isAuthenticated();
+      
+      // Allow create if:
+      // - User is authenticated
+      // - User is the owner (ownerId matches auth.uid)
+      // - User is in memberIds (initial member)
+      // - User's profile is in members object
+      // - Assignments start as null (draw not run yet)
+      // - customFields and memberResponses are allowed (optional fields)
+      allow create: if isAuthenticated()
+        && request.resource.data.ownerId == request.auth.uid
+        && request.auth.uid in request.resource.data.memberIds
+        && request.resource.data.members[request.auth.uid] != null
+        && request.resource.data.assignments == null
+        && request.resource.data.drawRunAt == null
+        && (!('customFields' in request.resource.data) || request.resource.data.customFields is list)
+        && (!('memberResponses' in request.resource.data) || request.resource.data.memberResponses is map);
+      
+      // Allow update for two scenarios:
+      allow update: if isAuthenticated() && (
+        // Scenario 1: User is joining (adding themselves)
+        // - User must NOT already be a member
+        // - User is adding themselves to memberIds
+        // - User is adding their profile to members object
+        // - All existing members are preserved
+        // - Cannot change ownerId, assignments, or drawRunAt
+        (!(request.auth.uid in resource.data.memberIds)
+          && request.auth.uid in request.resource.data.memberIds
+          && request.resource.data.memberIds.hasAll(resource.data.memberIds)
+          && request.resource.data.memberIds.size() == resource.data.memberIds.size() + 1
+          && request.resource.data.members[request.auth.uid] != null
+          && request.resource.data.members[request.auth.uid].displayName != null
+          && request.resource.data.ownerId == resource.data.ownerId
+          && request.resource.data.assignments == resource.data.assignments
+          && request.resource.data.drawRunAt == resource.data.drawRunAt
+          && request.resource.data.customFields == resource.data.customFields
+          && request.resource.data.members.diff(resource.data.members).affectedKeys().hasOnly([request.auth.uid])
+          && (
+            // memberResponses either doesn't exist in resource (first member after creator) or only the joining user's entry is added
+            (!('memberResponses' in resource.data) && 'memberResponses' in request.resource.data && request.resource.data.memberResponses[request.auth.uid] is map) ||
+            ('memberResponses' in resource.data && request.resource.data.memberResponses.diff(resource.data.memberResponses).affectedKeys().hasOnly([request.auth.uid]) && request.resource.data.memberResponses[request.auth.uid] is map)
+          )) ||
+        
+        // Scenario 2: Owner is running the draw
+        // - User must be the owner
+        // - Can update assignments and drawRunAt
+        // - Cannot change ownerId, memberIds, members, customFields, or memberResponses
+        (isOwner(resource.data)
+          && request.resource.data.assignments != null
+          && request.resource.data.drawRunAt != null
+          && request.resource.data.ownerId == resource.data.ownerId
+          && request.resource.data.memberIds == resource.data.memberIds
+          && request.resource.data.members == resource.data.members
+          && request.resource.data.customFields == resource.data.customFields
+          && request.resource.data.memberResponses == resource.data.memberResponses)
+      );
+      
+      // Allow delete only if user is the owner
+      allow delete: if isAuthenticated() && isOwner(resource.data);
+    }
+    
+    // Deny all other collections
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

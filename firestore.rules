@@ -77,18 +77,27 @@ service cloud.firestore {
         // - User must be a member
         // - Can only update their own entry in memberResponses
         // - Cannot change any other fields
+        // - Assignments must remain null (draw not run yet)
         (isOwner(resource.data)
           && request.auth.uid in resource.data.memberIds
           && request.resource.data.ownerId == resource.data.ownerId
           && request.resource.data.memberIds == resource.data.memberIds
           && request.resource.data.members == resource.data.members
           && request.resource.data.customFields == resource.data.customFields
-          && request.resource.data.assignments == resource.data.assignments
-          && request.resource.data.drawRunAt == resource.data.drawRunAt
+          && (request.resource.data.assignments == null || request.resource.data.assignments == resource.data.assignments)
+          && (request.resource.data.drawRunAt == null || request.resource.data.drawRunAt == resource.data.drawRunAt)
           && request.resource.data.joinCode == resource.data.joinCode
+          && 'memberResponses' in request.resource.data
+          && request.resource.data.memberResponses[request.auth.uid] is map
+          && request.resource.data.memberResponses[request.auth.uid] != null
           && (
-            (!('memberResponses' in resource.data) && 'memberResponses' in request.resource.data && request.resource.data.memberResponses[request.auth.uid] is map) ||
-            ('memberResponses' in resource.data && request.resource.data.memberResponses.diff(resource.data.memberResponses).affectedKeys().hasOnly([request.auth.uid]) && request.resource.data.memberResponses[request.auth.uid] is map)
+            // Case 1: memberResponses is empty or doesn't exist - owner adding their first response
+            ((!('memberResponses' in resource.data) || resource.data.memberResponses.size() == 0)
+              && request.resource.data.memberResponses.size() == 1) ||
+            // Case 2: memberResponses exists with entries - only owner's entry should change
+            ('memberResponses' in resource.data
+              && resource.data.memberResponses.size() > 0
+              && request.resource.data.memberResponses.diff(resource.data.memberResponses).affectedKeys().hasOnly([request.auth.uid]))
           ))
       );
       

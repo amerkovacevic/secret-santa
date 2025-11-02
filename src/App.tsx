@@ -558,10 +558,9 @@ function App() {
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 px-4 py-8">
         <div className="w-full max-w-lg space-y-6 sm:space-y-8 rounded-2xl sm:rounded-3xl border border-slate-800/80 bg-slate-900/80 p-6 sm:p-10 text-center shadow-2xl shadow-emerald-500/10 backdrop-blur">
           <div className="space-y-2 sm:space-y-3">
-            <p className="text-xs sm:text-sm uppercase tracking-[0.35em] text-emerald-400">Secret Santa</p>
             <h1 className="text-3xl font-semibold text-white sm:text-4xl lg:text-5xl">Gift Exchange HQ</h1>
             <p className="text-sm sm:text-base text-slate-400">
-              Orchestrate festive fun with Google sign-in, smart group management, and effortless draws powered by Firebase.
+            Easily set up your Secret Santa and let the magic handle the rest.
             </p>
           </div>
           <button

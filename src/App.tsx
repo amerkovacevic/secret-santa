@@ -10,6 +10,7 @@ import {
   deleteDoc,
   doc,
   getDoc,
+  getDocs,
   onSnapshot,
   query,
   serverTimestamp,
@@ -51,6 +52,7 @@ type Group = {
   assignments?: Record<string, Assignment> | null;
   customFields?: CustomField[];
   memberResponses?: Record<string, MemberResponse>;
+  joinCode?: string;
   createdAt?: Timestamp | null;
   drawRunAt?: Timestamp | null;
 };
@@ -82,6 +84,15 @@ const shuffle = <T,>(items: T[]) => {
 
 const generateFieldId = () => `field_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
+const generateJoinCode = (): string => {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Excluded confusing chars (0, O, I, 1)
+  let code = '';
+  for (let i = 0; i < 6; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return code;
+};
+
 function App() {
   const [user, setUser] = useState<User | null>(null);
   const [authError, setAuthError] = useState<string | null>(null);
@@ -111,6 +122,11 @@ function App() {
 
   const [isDeletingGroup, setIsDeletingGroup] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  const [showOwnerPreferences, setShowOwnerPreferences] = useState(false);
+  const [ownerResponses, setOwnerResponses] = useState<Record<string, string>>({});
+  const [pendingGroupId, setPendingGroupId] = useState<string | null>(null);
+  const [pendingCustomFields, setPendingCustomFields] = useState<CustomField[]>([]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -154,6 +170,7 @@ function App() {
               assignments,
               customFields: (data.customFields ?? []) as CustomField[],
               memberResponses: (data.memberResponses ?? {}) as Record<string, MemberResponse>,
+              joinCode: data.joinCode ?? null,
               createdAt: (data.createdAt as Timestamp | undefined) ?? null,
               drawRunAt: (data.drawRunAt as Timestamp | undefined) ?? null,
             } satisfies Group;
@@ -268,6 +285,7 @@ function App() {
     }
 
     try {
+      const joinCode = generateJoinCode();
       const docRef = await addDoc(collection(db, 'groups'), {
         name: trimmedName,
         description: newGroupDescription.trim() || '',
@@ -284,6 +302,7 @@ function App() {
         assignments: null,
         customFields: customFields.length > 0 ? customFields : undefined,
         memberResponses: {},
+        joinCode: joinCode,
         createdAt: serverTimestamp(),
         drawRunAt: null,
       });
@@ -291,8 +310,21 @@ function App() {
       setNewGroupName('');
       setNewGroupDescription('');
       setCustomFields([]);
-      setCreateSuccess('Group created! Share the join code with your Santas.');
-      setSelectedGroupId(docRef.id);
+      
+      // If there are custom fields, prompt organizer to fill them out
+      if (customFields.length > 0) {
+        setPendingGroupId(docRef.id);
+        setPendingCustomFields(customFields);
+        setShowOwnerPreferences(true);
+        const initialResponses: Record<string, string> = {};
+        customFields.forEach((field) => {
+          initialResponses[field.id] = '';
+        });
+        setOwnerResponses(initialResponses);
+      } else {
+        setCreateSuccess(`Group created! Share the join code: ${joinCode}`);
+        setSelectedGroupId(docRef.id);
+      }
     } catch (error) {
       console.error('Failed to create group', error);
       setCreateError('Unable to create that group. Please try again.');
@@ -319,16 +351,24 @@ function App() {
     setIsJoining(true);
 
     try {
-      const groupRef = doc(db, 'groups', trimmedCode);
-      const groupSnapshot = await getDoc(groupRef);
+      // Query by joinCode instead of document ID
+      const groupsQuery = query(
+        collection(db, 'groups'),
+        where('joinCode', '==', trimmedCode.toUpperCase())
+      );
+      const querySnapshot = await getDocs(groupsQuery);
 
-      if (!groupSnapshot.exists()) {
+      if (querySnapshot.empty) {
         setJoinError('No group found with that code.');
         setIsJoining(false);
         return;
       }
 
+      const groupSnapshot = querySnapshot.docs[0];
+      const groupRef = doc(db, 'groups', groupSnapshot.id);
+
       const data = groupSnapshot.data();
+      const groupId = groupSnapshot.id;
       const memberIds: string[] = data.memberIds ?? [];
       if (memberIds.includes(user.uid)) {
         setJoinError('You are already part of that group.');
@@ -365,7 +405,7 @@ function App() {
       setJoinCode('');
       setJoinGroupFields([]);
       setJoinResponses({});
-      setSelectedGroupId(trimmedCode);
+      setSelectedGroupId(groupId);
     } catch (error) {
       console.error('Failed to join group', error);
       setJoinError('Could not join that group. Please double-check the code.');
@@ -432,17 +472,61 @@ function App() {
       return;
     }
 
-    setDeleteError(null);
-    setIsDeletingGroup(true);
+      setDeleteError(null);
+      setIsDeletingGroup(true);
 
     try {
       await deleteDoc(doc(db, 'groups', group.id));
       // Group will be automatically removed from groups list via onSnapshot
       setSelectedGroupId(null);
+      setIsDeletingGroup(false); // Reset state after successful deletion
     } catch (error) {
       console.error('Failed to delete group', error);
       setDeleteError('Unable to delete the group. Please try again.');
       setIsDeletingGroup(false);
+    }
+  };
+
+  const handleSaveOwnerPreferences = async () => {
+    if (!user || !pendingGroupId) return;
+
+    // Get the group to access joinCode
+    const groupDoc = await getDoc(doc(db, 'groups', pendingGroupId));
+    if (!groupDoc.exists()) {
+      setJoinError('Group not found. Please try creating again.');
+      setShowOwnerPreferences(false);
+      setPendingGroupId(null);
+      setPendingCustomFields([]);
+      return;
+    }
+
+    const groupData = groupDoc.data();
+    const joinCode = groupData.joinCode || pendingGroupId;
+    
+    const missingFields = pendingCustomFields.filter(
+      (field) => !ownerResponses[field.id] || !ownerResponses[field.id].trim()
+    );
+    
+    if (missingFields.length > 0) {
+      setJoinError(`Please fill out all required fields: ${missingFields.map(f => f.label).join(', ')}`);
+      return;
+    }
+
+    try {
+      const responseField = `memberResponses.${user.uid}`;
+      await updateDoc(doc(db, 'groups', pendingGroupId), {
+        [responseField]: ownerResponses,
+      });
+
+      setCreateSuccess(`Group created! Share the join code: ${joinCode}`);
+      setShowOwnerPreferences(false);
+      setOwnerResponses({});
+      setPendingGroupId(null);
+      setPendingCustomFields([]);
+      setSelectedGroupId(pendingGroupId);
+    } catch (error) {
+      console.error('Failed to save owner preferences', error);
+      setJoinError('Unable to save preferences. Please try again.');
     }
   };
 
@@ -550,6 +634,51 @@ function App() {
           </p>
         ) : null}
 
+        {/* Owner Preferences Modal */}
+        {showOwnerPreferences && pendingGroupId && pendingCustomFields.length > 0 && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+            <div className="w-full max-w-lg rounded-3xl border border-slate-800/80 bg-slate-900/95 p-6 shadow-2xl">
+              <h2 className="text-2xl font-semibold text-white mb-2">Fill out your preferences</h2>
+              <p className="text-sm text-slate-400 mb-6">
+                As the organizer, please fill out the custom fields you created for your group.
+              </p>
+              
+              <div className="space-y-4 mb-6">
+                {pendingCustomFields.map((field) => (
+                  <label key={field.id} className="block text-sm font-semibold text-slate-300">
+                    {field.label}
+                    <input
+                      type="text"
+                      value={ownerResponses[field.id] || ''}
+                      onChange={(event) => {
+                        setOwnerResponses({ ...ownerResponses, [field.id]: event.target.value });
+                      }}
+                      placeholder={field.placeholder || `Enter ${field.label.toLowerCase()}`}
+                      className="mt-1 w-full rounded-2xl border border-slate-700/80 bg-slate-900 px-4 py-2 text-sm text-white placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/40"
+                    />
+                  </label>
+                ))}
+              </div>
+
+              {joinError && (
+                <p className="mb-4 rounded-2xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+                  {joinError}
+                </p>
+              )}
+
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={handleSaveOwnerPreferences}
+                  className="flex-1 inline-flex items-center justify-center rounded-full bg-emerald-400/90 px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-emerald-300"
+                >
+                  Save Preferences
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <section className="grid gap-6 lg:grid-cols-[1.6fr_1fr]">
           <div className="space-y-6">
             <div className="rounded-3xl border border-slate-800/80 bg-slate-900/80 p-6 shadow-lg shadow-emerald-500/5">
@@ -598,7 +727,7 @@ function App() {
                     <div className="flex flex-wrap items-center gap-3">
                       <h2 className="text-2xl font-semibold text-white">{selectedGroup.name}</h2>
                       <span className="rounded-full border border-emerald-400/50 px-3 py-1 text-xs font-semibold text-emerald-300">
-                        Code: {selectedGroup.id}
+                        Code: {selectedGroup.joinCode || selectedGroup.id}
                       </span>
                     </div>
                     {selectedGroup.description ? (
@@ -679,7 +808,8 @@ function App() {
                               <p className="text-[10px] uppercase tracking-wide text-slate-500">
                                 {member.id === selectedGroup.ownerId ? 'Organizer' : 'Participant'}
                               </p>
-                              {selectedGroup.customFields && selectedGroup.customFields.length > 0 && selectedGroup.memberResponses?.[member.id] && (
+                              {/* Only show user's own preferences */}
+                              {selectedGroup.customFields && selectedGroup.customFields.length > 0 && member.id === user.uid && selectedGroup.memberResponses?.[member.id] && (
                                 <div className="mt-2 space-y-1">
                                   {selectedGroup.customFields.map((field) => {
                                     const response = selectedGroup.memberResponses?.[member.id]?.[field.id];
@@ -816,7 +946,7 @@ function App() {
                           updated[index] = { ...field, label: event.target.value };
                           setCustomFields(updated);
                         }}
-                        placeholder="Field label (e.g., Jersey size, Avoidable clubs)"
+                        placeholder="Field label (e.g., Jersey size)"
                         className="w-full rounded-xl border border-slate-700/80 bg-slate-900 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/40"
                       />
                       <input
@@ -827,7 +957,7 @@ function App() {
                           updated[index] = { ...field, placeholder: event.target.value };
                           setCustomFields(updated);
                         }}
-                        placeholder="Placeholder text (optional)"
+                        placeholder="Size, Address, etc."
                         className="w-full rounded-xl border border-slate-700/80 bg-slate-900 px-3 py-2 text-xs text-slate-300 placeholder:text-slate-600 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/40"
                       />
                     </div>

@@ -10,10 +10,6 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.uid == groupData.ownerId;
     }
     
-    function isMember(groupData) {
-      return isAuthenticated() && request.auth.uid in groupData.memberIds;
-    }
-    
     // Groups collection rules
     match /groups/{groupId} {
       // Allow read if user is authenticated
@@ -26,7 +22,7 @@ service cloud.firestore {
       // - User is in memberIds (initial member)
       // - User's profile is in members object
       // - Assignments start as null (draw not run yet)
-      // - customFields and memberResponses are allowed (optional fields)
+      // - joinCode, customFields and memberResponses are allowed (optional fields)
       allow create: if isAuthenticated()
         && request.resource.data.ownerId == request.auth.uid
         && request.auth.uid in request.resource.data.memberIds
@@ -34,9 +30,10 @@ service cloud.firestore {
         && request.resource.data.assignments == null
         && request.resource.data.drawRunAt == null
         && (!('customFields' in request.resource.data) || request.resource.data.customFields is list)
-        && (!('memberResponses' in request.resource.data) || request.resource.data.memberResponses is map);
+        && (!('memberResponses' in request.resource.data) || request.resource.data.memberResponses is map)
+        && (!('joinCode' in request.resource.data) || request.resource.data.joinCode is string);
       
-      // Allow update for two scenarios:
+      // Allow update for three scenarios:
       allow update: if isAuthenticated() && (
         // Scenario 1: User is joining (adding themselves)
         // - User must NOT already be a member
@@ -64,7 +61,7 @@ service cloud.firestore {
         // Scenario 2: Owner is running the draw
         // - User must be the owner
         // - Can update assignments and drawRunAt
-        // - Cannot change ownerId, memberIds, members, customFields, or memberResponses
+        // - Cannot change ownerId, memberIds, members, customFields, memberResponses, or joinCode
         (isOwner(resource.data)
           && request.resource.data.assignments != null
           && request.resource.data.drawRunAt != null
@@ -72,7 +69,27 @@ service cloud.firestore {
           && request.resource.data.memberIds == resource.data.memberIds
           && request.resource.data.members == resource.data.members
           && request.resource.data.customFields == resource.data.customFields
-          && request.resource.data.memberResponses == resource.data.memberResponses)
+          && request.resource.data.joinCode == resource.data.joinCode
+          && request.resource.data.memberResponses == resource.data.memberResponses) ||
+        
+        // Scenario 3: Owner updating their own preferences after group creation
+        // - User must be the owner
+        // - User must be a member
+        // - Can only update their own entry in memberResponses
+        // - Cannot change any other fields
+        (isOwner(resource.data)
+          && request.auth.uid in resource.data.memberIds
+          && request.resource.data.ownerId == resource.data.ownerId
+          && request.resource.data.memberIds == resource.data.memberIds
+          && request.resource.data.members == resource.data.members
+          && request.resource.data.customFields == resource.data.customFields
+          && request.resource.data.assignments == resource.data.assignments
+          && request.resource.data.drawRunAt == resource.data.drawRunAt
+          && request.resource.data.joinCode == resource.data.joinCode
+          && (
+            (!('memberResponses' in resource.data) && 'memberResponses' in request.resource.data && request.resource.data.memberResponses[request.auth.uid] is map) ||
+            ('memberResponses' in resource.data && request.resource.data.memberResponses.diff(resource.data.memberResponses).affectedKeys().hasOnly([request.auth.uid]) && request.resource.data.memberResponses[request.auth.uid] is map)
+          ))
       );
       
       // Allow delete only if user is the owner

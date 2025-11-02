@@ -544,10 +544,10 @@ function App() {
 
   if (initializing) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-950 text-slate-200">
+      <div className="flex min-h-screen items-center justify-center bg-primary-800 text-accent-50">
         <div className="flex flex-col items-center gap-4">
-          <div className="h-12 w-12 animate-spin rounded-full border-4 border-slate-700 border-t-emerald-400" />
-          <p className="text-sm text-slate-400">Loading your workshop…</p>
+          <div className="h-12 w-12 animate-spin rounded-full border-4 border-tertiary-500 border-t-quaternary-500" />
+          <p className="text-sm text-quaternary-500">Loading your workshop…</p>
         </div>
       </div>
     );
@@ -555,18 +555,18 @@ function App() {
 
   if (!user) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 px-4 py-8">
-        <div className="w-full max-w-lg space-y-6 sm:space-y-8 rounded-2xl sm:rounded-3xl border border-slate-800/80 bg-slate-900/80 p-6 sm:p-10 text-center shadow-2xl shadow-emerald-500/10 backdrop-blur">
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-primary-800 via-secondary-700 to-primary-800 px-4 py-8">
+        <div className="w-full max-w-lg space-y-6 sm:space-y-8 rounded-2xl sm:rounded-3xl border border-tertiary-500/50 bg-secondary-700/90 p-6 sm:p-10 text-center shadow-2xl shadow-tertiary-500/20 backdrop-blur">
           <div className="space-y-2 sm:space-y-3">
-            <h1 className="text-3xl font-semibold text-white sm:text-4xl lg:text-5xl">Gift Exchange HQ</h1>
-            <p className="text-sm sm:text-base text-slate-400">
-            Easily set up your Secret Santa and let the magic handle the rest.
+            <h1 className="text-3xl font-semibold text-accent-50 sm:text-4xl lg:text-5xl">Gift Exchange HQ</h1>
+            <p className="text-sm sm:text-base text-quaternary-400">
+            Easily set up your Secret Santa and let magic handle the rest.
             </p>
           </div>
           <button
             type="button"
             onClick={handleGoogleSignIn}
-            className="inline-flex w-full items-center justify-center gap-3 rounded-full bg-emerald-400/90 px-6 py-3 text-base sm:text-lg font-semibold text-slate-950 transition hover:bg-emerald-300 active:bg-emerald-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 touch-manipulation"
+            className="inline-flex w-full items-center justify-center gap-3 rounded-full bg-tertiary-500 px-6 py-3 text-base sm:text-lg font-semibold text-accent-50 transition hover:bg-tertiary-600 active:bg-tertiary-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-tertiary-400 focus-visible:ring-offset-2 focus-visible:ring-offset-primary-800 touch-manipulation"
           >
             <span>Continue with Google</span>
             <svg className="h-6 w-6" viewBox="0 0 533.5 544.3" aria-hidden="true">
@@ -588,7 +588,7 @@ function App() {
               />
             </svg>
           </button>
-          {authError ? <p className="text-sm text-rose-400">{authError}</p> : null}
+          {authError ? <p className="text-sm text-warning-400">{authError}</p> : null}
         </div>
       </div>
     );
@@ -608,27 +608,27 @@ function App() {
   const drawRanAt = formatTimestamp(selectedGroup?.drawRunAt);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 pb-16 text-slate-100">
-      <header className="border-b border-slate-800/80 bg-slate-950/70 backdrop-blur">
+    <div className="min-h-screen bg-gradient-to-br from-primary-800 via-secondary-700 to-primary-800 pb-16 text-accent-50">
+      <header className="border-b border-tertiary-500/30 bg-primary-800/90 backdrop-blur">
         <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-4 sm:px-6 sm:py-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-xl font-semibold text-white sm:text-2xl lg:text-3xl">Gift Exchange HQ</h1>
+            <h1 className="text-xl font-semibold text-accent-50 sm:text-2xl lg:text-3xl">Gift Exchange HQ</h1>
           </div>
           <div className="flex items-center gap-3">
             {user.photoURL ? (
               <img
                 src={user.photoURL}
                 alt={getDisplayName(user)}
-                className="h-9 w-9 sm:h-10 sm:w-10 rounded-full border border-emerald-400/60 flex-shrink-0"
+                className="h-9 w-9 sm:h-10 sm:w-10 rounded-full border border-tertiary-500/60 flex-shrink-0"
                 referrerPolicy="no-referrer"
               />
             ) : null}
             <div className="text-right min-w-0 flex-1">
-              <p className="text-xs sm:text-sm font-medium text-white truncate">{getDisplayName(user)}</p>
+              <p className="text-xs sm:text-sm font-medium text-accent-50 truncate">{getDisplayName(user)}</p>
               <button
                 type="button"
                 onClick={handleSignOut}
-                className="text-xs text-slate-400 underline-offset-2 transition hover:text-emerald-300 hover:underline active:text-emerald-300 active:underline"
+                className="text-xs text-quaternary-400 underline-offset-2 transition hover:text-tertiary-400 hover:underline active:text-tertiary-400 active:underline"
               >
                 Sign out
               </button>
@@ -639,7 +639,7 @@ function App() {
 
       <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
         {groupsError ? (
-          <p className="rounded-xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+          <p className="rounded-xl border border-warning-500/40 bg-warning-500/10 px-4 py-3 text-sm text-warning-200">
             {groupsError}
           </p>
         ) : null}
@@ -647,15 +647,15 @@ function App() {
         {/* Owner Preferences Modal */}
         {showOwnerPreferences && pendingGroupId && pendingCustomFields.length > 0 && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
-            <div className="w-full max-w-lg rounded-2xl sm:rounded-3xl border border-slate-800/80 bg-slate-900/95 p-4 sm:p-6 shadow-2xl my-auto">
-              <h2 className="text-xl sm:text-2xl font-semibold text-white mb-2">Fill out your preferences</h2>
-              <p className="text-xs sm:text-sm text-slate-400 mb-4 sm:mb-6">
+            <div className="w-full max-w-lg rounded-2xl sm:rounded-3xl border border-tertiary-500/50 bg-secondary-700/95 p-4 sm:p-6 shadow-2xl my-auto">
+              <h2 className="text-xl sm:text-2xl font-semibold text-accent-50 mb-2">Fill out your preferences</h2>
+              <p className="text-xs sm:text-sm text-quaternary-400 mb-4 sm:mb-6">
                 As the organizer, please fill out the custom fields you created for your group.
               </p>
               
               <div className="space-y-4 mb-6">
                 {pendingCustomFields.map((field) => (
-                  <label key={field.id} className="block text-sm font-semibold text-slate-300">
+                  <label key={field.id} className="block text-sm font-semibold text-quaternary-300">
                     {field.label}
                     <input
                       type="text"
@@ -664,14 +664,14 @@ function App() {
                         setOwnerResponses({ ...ownerResponses, [field.id]: event.target.value });
                       }}
                       placeholder={field.placeholder || `Enter ${field.label.toLowerCase()}`}
-                      className="mt-1 w-full rounded-2xl border border-slate-700/80 bg-slate-900 px-4 py-2 text-sm text-white placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/40"
+                      className="mt-1 w-full rounded-2xl border border-tertiary-600/80 bg-secondary-700 px-4 py-2 text-sm text-accent-50 placeholder:text-quaternary-500 focus:border-tertiary-500 focus:outline-none focus:ring-2 focus:ring-tertiary-500/40"
                     />
                   </label>
                 ))}
               </div>
 
               {joinError && (
-                <p className="mb-4 rounded-2xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+                <p className="mb-4 rounded-2xl border border-warning-500/40 bg-warning-500/10 px-4 py-3 text-sm text-warning-200">
                   {joinError}
                 </p>
               )}
@@ -680,7 +680,7 @@ function App() {
                 <button
                   type="button"
                   onClick={handleSaveOwnerPreferences}
-                  className="flex-1 inline-flex items-center justify-center rounded-full bg-emerald-400/90 px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-emerald-300 active:bg-emerald-300 touch-manipulation"
+                  className="flex-1 inline-flex items-center justify-center rounded-full bg-tertiary-500 px-6 py-3 text-sm font-semibold text-primary-800 transition hover:bg-tertiary-600 active:bg-tertiary-600 touch-manipulation"
                 >
                   Save Preferences
                 </button>
@@ -691,15 +691,15 @@ function App() {
 
         <section className="grid gap-4 sm:gap-6 lg:grid-cols-[1.6fr_1fr]">
           <div className="space-y-4 sm:space-y-6">
-            <div className="rounded-2xl sm:rounded-3xl border border-slate-800/80 bg-slate-900/80 p-4 sm:p-6 shadow-lg shadow-emerald-500/5">
+            <div className="rounded-2xl sm:rounded-3xl border border-tertiary-500/80 bg-secondary-700/80 p-4 sm:p-6 shadow-lg shadow-tertiary-500/5">
               <div className="flex items-center justify-between gap-4">
-                <h2 className="text-lg sm:text-xl font-semibold text-white">Your groups</h2>
-                <span className="rounded-full bg-emerald-400/10 px-2 sm:px-3 py-1 text-[10px] sm:text-xs font-semibold text-emerald-300 whitespace-nowrap">
+                <h2 className="text-lg sm:text-xl font-semibold text-accent-50">Your groups</h2>
+                  <span className="rounded-full bg-tertiary-500/20 px-2 sm:px-3 py-1 text-[10px] sm:text-xs font-semibold text-tertiary-400 whitespace-nowrap">
                   {groups.length} active
                 </span>
               </div>
               {groups.length === 0 ? (
-                <p className="mt-4 text-sm text-slate-400">
+                <p className="mt-4 text-sm text-quaternary-400">
                   You are not part of any groups yet. Create one or join with a code to get started.
                 </p>
               ) : (
@@ -711,16 +711,16 @@ function App() {
                       onClick={() => setSelectedGroupId(group.id)}
                       className={`flex w-full items-center justify-between gap-2 sm:gap-3 rounded-xl sm:rounded-2xl border px-3 sm:px-4 py-2.5 sm:py-3 text-left transition active:scale-[0.98] touch-manipulation ${
                         selectedGroupId === group.id
-                          ? 'border-emerald-400/60 bg-emerald-400/10 text-white'
-                          : 'border-slate-800/80 bg-slate-900/60 text-slate-300 hover:border-emerald-400/40 hover:bg-slate-900/80 hover:text-white active:border-emerald-400/40 active:bg-slate-900/80 active:text-white'
+                          ? 'border-tertiary-500/60 bg-tertiary-500/10 text-accent-50'
+                          : 'border-tertiary-500/80 bg-secondary-700/60 text-quaternary-300 hover:border-tertiary-500/40 hover:bg-secondary-700/80 hover:text-accent-50 active:border-tertiary-500/40 active:bg-secondary-700/80 active:text-accent-50'
                       }`}
                     >
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-semibold sm:text-base truncate">{group.name}</p>
-                        <p className="text-xs text-slate-400">{group.memberIds.length} members</p>
+                        <p className="text-xs text-quaternary-400">{group.memberIds.length} members</p>
                       </div>
                       {group.ownerId === user.uid ? (
-                        <span className="rounded-full bg-emerald-400/20 px-2 sm:px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-emerald-300 whitespace-nowrap flex-shrink-0">
+                        <span className="rounded-full bg-tertiary-500/20 px-2 sm:px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-tertiary-400 whitespace-nowrap flex-shrink-0">
                           Organizer
                         </span>
                       ) : null}
@@ -730,44 +730,44 @@ function App() {
               )}
             </div>
 
-            <div className="rounded-2xl sm:rounded-3xl border border-slate-800/80 bg-slate-900/80 p-4 sm:p-6 shadow-lg shadow-emerald-500/5">
+            <div className="rounded-2xl sm:rounded-3xl border border-tertiary-500/80 bg-secondary-700/80 p-4 sm:p-6 shadow-lg shadow-tertiary-500/5">
               {selectedGroup ? (
                 <div className="space-y-4 sm:space-y-6">
                   <header>
                     <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                      <h2 className="text-xl sm:text-2xl font-semibold text-white break-words">{selectedGroup.name}</h2>
-                      <span className="rounded-full border border-emerald-400/50 px-2 sm:px-3 py-1 text-[10px] sm:text-xs font-semibold text-emerald-300 whitespace-nowrap">
+                      <h2 className="text-xl sm:text-2xl font-semibold text-accent-50 break-words">{selectedGroup.name}</h2>
+                      <span className="rounded-full border border-tertiary-500/50 px-2 sm:px-3 py-1 text-[10px] sm:text-xs font-semibold text-tertiary-400 whitespace-nowrap">
                         Code: {selectedGroup.joinCode || selectedGroup.id}
                       </span>
                     </div>
                     {selectedGroup.description ? (
-                      <p className="mt-2 text-sm text-slate-400">{selectedGroup.description}</p>
+                      <p className="mt-2 text-sm text-quaternary-400">{selectedGroup.description}</p>
                     ) : null}
-                    <p className="mt-3 text-xs text-slate-500">
+                    <p className="mt-3 text-xs text-quaternary-500">
                       Host: {selectedGroup.ownerName}
                     </p>
                     {drawRanAt ? (
-                      <p className="mt-1 text-xs text-emerald-300/80">
+                      <p className="mt-1 text-xs text-tertiary-400/80">
                         Last draw: {drawRanAt}
                       </p>
                     ) : null}
                   </header>
 
                   {drawError ? (
-                    <p className="rounded-2xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+                    <p className="rounded-2xl border border-warning-500/40 bg-warning-500/10 px-4 py-3 text-sm text-warning-200">
                       {drawError}
                     </p>
                   ) : null}
                   {drawSuccess ? (
-                    <p className="rounded-2xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+                    <p className="rounded-2xl border border-success-500/40 bg-success-500/10 px-4 py-3 text-sm text-success-200">
                       {drawSuccess}
                     </p>
                   ) : null}
 
                   {myAssignment ? (
-                    <div className="rounded-xl sm:rounded-2xl border border-emerald-500/40 bg-emerald-500/10 p-4 sm:p-5">
-                      <p className="text-xs sm:text-sm uppercase tracking-wide text-emerald-300">Your match</p>
-                      <p className="mt-2 text-xl sm:text-2xl font-semibold text-white break-words">{myAssignment.recipientName}</p>
+                    <div className="rounded-xl sm:rounded-2xl border border-tertiary-500/40 bg-tertiary-500/10 p-4 sm:p-5">
+                      <p className="text-xs sm:text-sm uppercase tracking-wide text-tertiary-400">Your match</p>
+                      <p className="mt-2 text-xl sm:text-2xl font-semibold text-accent-50 break-words">{myAssignment.recipientName}</p>
                       {selectedGroup.customFields && selectedGroup.customFields.length > 0 && selectedGroup.memberResponses?.[myAssignment.recipientId] && (
                         <div className="mt-4 space-y-2">
                           {selectedGroup.customFields.map((field) => {
@@ -775,47 +775,47 @@ function App() {
                             if (!response) return null;
                             return (
                               <div key={field.id} className="text-sm">
-                                <span className="text-emerald-200/80">{field.label}:</span>{' '}
-                                <span className="text-white font-medium">{response}</span>
+                                <span className="text-quaternary-300/80">{field.label}:</span>{' '}
+                                <span className="text-accent-50 font-medium">{response}</span>
                               </div>
                             );
                           })}
                         </div>
                       )}
-                      <p className="mt-3 text-sm text-emerald-200/80">
+                      <p className="mt-3 text-sm text-quaternary-300/80">
                         Keep it secret! Only you can see this assignment.
                       </p>
                     </div>
                   ) : (
-                    <p className="rounded-xl sm:rounded-2xl border border-slate-800/80 bg-slate-900/70 p-4 sm:p-5 text-xs sm:text-sm text-slate-400">
+                    <p className="rounded-xl sm:rounded-2xl border border-tertiary-500/80 bg-secondary-700/70 p-4 sm:p-5 text-xs sm:text-sm text-quaternary-400">
                       Waiting for the organizer to run the draw. Once they do, your match will appear here.
                     </p>
                   )}
 
                   <div>
-                    <h3 className="text-base sm:text-lg font-semibold text-white">Group roster</h3>
+                    <h3 className="text-base sm:text-lg font-semibold text-accent-50">Group roster</h3>
                     <ul className="mt-3 space-y-2">
                       {memberProfiles.map((member) => (
                         <li
                           key={member.id}
-                          className="flex items-center gap-2 sm:gap-3 rounded-xl sm:rounded-2xl border border-slate-800/70 bg-slate-900/70 px-3 sm:px-4 py-2.5 sm:py-3"
+                          className="flex items-center gap-2 sm:gap-3 rounded-xl sm:rounded-2xl border border-tertiary-500/70 bg-secondary-700/70 px-3 sm:px-4 py-2.5 sm:py-3"
                         >
                           {member.photoURL ? (
                             <img
                               src={member.photoURL}
                               alt={member.displayName}
-                              className="h-8 w-8 sm:h-9 sm:w-9 rounded-full border border-slate-700 flex-shrink-0"
+                              className="h-8 w-8 sm:h-9 sm:w-9 rounded-full border border-tertiary-600 flex-shrink-0"
                               referrerPolicy="no-referrer"
                             />
                           ) : (
-                            <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full border border-slate-700 bg-slate-800 text-xs font-semibold text-slate-300 flex-shrink-0">
+                            <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full border border-tertiary-600 bg-secondary-700 text-xs font-semibold text-quaternary-300 flex-shrink-0">
                               {member.displayName.charAt(0).toUpperCase()}
                             </div>
                           )}
                           <div className="flex flex-1 items-center justify-between gap-2 sm:gap-3 min-w-0">
                             <div className="flex-1 min-w-0">
-                              <p className="text-xs sm:text-sm font-medium text-white truncate">{member.displayName}</p>
-                              <p className="text-[10px] uppercase tracking-wide text-slate-500">
+                              <p className="text-xs sm:text-sm font-medium text-accent-50 truncate">{member.displayName}</p>
+                              <p className="text-[10px] uppercase tracking-wide text-quaternary-500">
                                 {member.id === selectedGroup.ownerId ? 'Organizer' : 'Participant'}
                               </p>
                               {/* Only show user's own preferences */}
@@ -825,7 +825,7 @@ function App() {
                                     const response = selectedGroup.memberResponses?.[member.id]?.[field.id];
                                     if (!response) return null;
                                     return (
-                                      <div key={field.id} className="text-xs text-slate-400">
+                                      <div key={field.id} className="text-xs text-quaternary-400">
                                         <span className="font-medium">{field.label}:</span> {response}
                                       </div>
                                     );
@@ -834,7 +834,7 @@ function App() {
                               )}
                             </div>
                             {selectedGroup.assignments?.[member.id]?.recipientName ? (
-                              <span className="rounded-full bg-slate-800/80 px-2 sm:px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-slate-400 whitespace-nowrap flex-shrink-0">
+                              <span className="rounded-full bg-secondary-700/80 px-2 sm:px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-quaternary-400 whitespace-nowrap flex-shrink-0">
                                 Assigned
                               </span>
                             ) : null}
@@ -846,28 +846,28 @@ function App() {
 
                   {user.uid === selectedGroup.ownerId ? (
                     <>
-                      <div className="rounded-xl sm:rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-4 sm:p-5">
-                        <h3 className="text-base sm:text-lg font-semibold text-white">Ready to draw?</h3>
-                        <p className="mt-1 text-xs sm:text-sm text-emerald-100/80">
+                      <div className="rounded-xl sm:rounded-2xl border border-tertiary-500/30 bg-tertiary-500/5 p-4 sm:p-5">
+                        <h3 className="text-base sm:text-lg font-semibold text-accent-50">Ready to draw?</h3>
+                        <p className="mt-1 text-xs sm:text-sm text-quaternary-400">
                           Only you can run the draw. Everyone will immediately see who they are gifting once you launch it.
                         </p>
                         <button
                           type="button"
                           onClick={() => handleRunDraw(selectedGroup)}
                           disabled={isRunningDraw}
-                          className="mt-4 inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-full bg-emerald-400/90 px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-emerald-300 active:bg-emerald-300 disabled:cursor-not-allowed disabled:opacity-60 touch-manipulation"
+                          className="mt-4 inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-full bg-tertiary-500 px-6 py-3 text-sm font-semibold text-accent-50 transition hover:bg-tertiary-600 active:bg-tertiary-600 disabled:cursor-not-allowed disabled:opacity-60 touch-manipulation"
                         >
                           {isRunningDraw ? 'Drawing names…' : 'Run the draw'}
                         </button>
                       </div>
 
-                      <div className="rounded-xl sm:rounded-2xl border border-rose-500/30 bg-rose-500/5 p-4 sm:p-5">
-                        <h3 className="text-base sm:text-lg font-semibold text-white">Danger zone</h3>
-                        <p className="mt-1 text-xs sm:text-sm text-rose-100/80">
+                      <div className="rounded-xl sm:rounded-2xl border border-warning-500/30 bg-warning-500/5 p-4 sm:p-5">
+                        <h3 className="text-base sm:text-lg font-semibold text-accent-50">Danger zone</h3>
+                        <p className="mt-1 text-xs sm:text-sm text-warning-100/80">
                           Permanently delete this group. This action cannot be undone.
                         </p>
                         {deleteError ? (
-                          <p className="mt-3 rounded-2xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+                          <p className="mt-3 rounded-2xl border border-warning-500/40 bg-warning-500/10 px-4 py-3 text-sm text-warning-200">
                             {deleteError}
                           </p>
                         ) : null}
@@ -875,7 +875,7 @@ function App() {
                           type="button"
                           onClick={() => handleDeleteGroup(selectedGroup)}
                           disabled={isDeletingGroup}
-                          className="mt-4 inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-full bg-rose-500/90 px-6 py-3 text-sm font-semibold text-white transition hover:bg-rose-400 active:bg-rose-400 disabled:cursor-not-allowed disabled:opacity-60 touch-manipulation"
+                          className="mt-4 inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-full bg-warning-500/90 px-6 py-3 text-sm font-semibold text-accent-50 transition hover:bg-warning-400 active:bg-warning-400 disabled:cursor-not-allowed disabled:opacity-60 touch-manipulation"
                         >
                           {isDeletingGroup ? 'Deleting…' : 'Delete group'}
                         </button>
@@ -884,7 +884,7 @@ function App() {
                   ) : null}
                 </div>
               ) : (
-                <p className="text-sm text-slate-400">
+                <p className="text-sm text-quaternary-400">
                   Select a group to view its members and draw details.
                 </p>
               )}
@@ -894,17 +894,17 @@ function App() {
           <div className="space-y-4 sm:space-y-6">
             <form
               onSubmit={handleCreateGroup}
-              className="space-y-4 sm:space-y-5 rounded-2xl sm:rounded-3xl border border-slate-800/80 bg-slate-900/80 p-4 sm:p-6 shadow-lg shadow-emerald-500/5"
+              className="space-y-4 sm:space-y-5 rounded-2xl sm:rounded-3xl border border-tertiary-500/80 bg-secondary-700/80 p-4 sm:p-6 shadow-lg shadow-tertiary-500/5"
             >
               <div>
-                <h2 className="text-lg sm:text-xl font-semibold text-white">Create a group</h2>
-                <p className="mt-1 text-xs sm:text-sm text-slate-400">
+                <h2 className="text-lg sm:text-xl font-semibold text-accent-50">Create a group</h2>
+                <p className="mt-1 text-xs sm:text-sm text-quaternary-400">
                   Spin up a brand-new exchange and invite friends with the join code.
                 </p>
               </div>
               <div className="space-y-3">
                 <div>
-                  <label className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  <label className="text-xs font-semibold uppercase tracking-wide text-quaternary-400">
                     Group name
                     <input
                       type="text"
@@ -917,19 +917,19 @@ function App() {
                         }
                       }}
                       placeholder="E.g. Product Team Elves"
-                      className="mt-1 w-full rounded-2xl border border-slate-700/80 bg-slate-900 px-4 py-2 text-sm text-white placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/40"
+                      className="mt-1 w-full rounded-2xl border border-tertiary-600/80 bg-secondary-700 px-4 py-2 text-sm text-accent-50 placeholder:text-quaternary-500 focus:border-tertiary-500 focus:outline-none focus:ring-2 focus:ring-tertiary-500/40"
                     />
                   </label>
                 </div>
                 <div>
-                  <label className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  <label className="text-xs font-semibold uppercase tracking-wide text-quaternary-400">
                     Description (optional)
                     <textarea
                       value={newGroupDescription}
                       onChange={(event) => setNewGroupDescription(event.target.value)}
                       placeholder="Let everyone know the theme, budget, or gift ideas."
                       rows={3}
-                      className="mt-1 w-full rounded-2xl border border-slate-700/80 bg-slate-900 px-4 py-2 text-sm text-white placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/40"
+                      className="mt-1 w-full rounded-2xl border border-tertiary-600/80 bg-secondary-700 px-4 py-2 text-sm text-accent-50 placeholder:text-quaternary-500 focus:border-tertiary-500 focus:outline-none focus:ring-2 focus:ring-tertiary-500/40"
                     />
                   </label>
                 </div>
@@ -938,7 +938,7 @@ function App() {
               {/* Custom Fields Section */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  <label className="text-xs font-semibold uppercase tracking-wide text-quaternary-400">
                     Custom fields (optional)
                   </label>
                   <button
@@ -946,7 +946,7 @@ function App() {
                     onClick={() => {
                       setCustomFields([...customFields, { id: generateFieldId(), label: '', placeholder: '' }]);
                     }}
-                    className="text-xs text-emerald-400 hover:text-emerald-300 transition"
+                    className="text-xs text-tertiary-400 hover:text-tertiary-400 transition"
                   >
                     + Add field
                   </button>
@@ -963,7 +963,7 @@ function App() {
                           setCustomFields(updated);
                         }}
                         placeholder="Field label (e.g., Size)"
-                        className="w-full rounded-xl border border-slate-700/80 bg-slate-900 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/40"
+                        className="w-full rounded-xl border border-tertiary-600/80 bg-secondary-700 px-3 py-2 text-sm text-accent-50 placeholder:text-quaternary-500 focus:border-tertiary-500 focus:outline-none focus:ring-2 focus:ring-tertiary-500/40"
                       />
                       <input
                         type="text"
@@ -974,7 +974,7 @@ function App() {
                           setCustomFields(updated);
                         }}
                         placeholder="Size, Address, etc."
-                        className="w-full rounded-xl border border-slate-700/80 bg-slate-900 px-3 py-2 text-xs text-slate-300 placeholder:text-slate-600 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/40"
+                        className="w-full rounded-xl border border-tertiary-600/80 bg-secondary-700 px-3 py-2 text-xs text-quaternary-300 placeholder:text-quaternary-600 focus:border-tertiary-500 focus:outline-none focus:ring-2 focus:ring-tertiary-500/40"
                       />
                     </div>
                     <button
@@ -982,33 +982,33 @@ function App() {
                       onClick={() => {
                         setCustomFields(customFields.filter((_, i) => i !== index));
                       }}
-                      className="px-3 py-2 text-xs text-slate-400 hover:text-rose-400 transition"
+                      className="px-3 py-2 text-xs text-quaternary-400 hover:text-warning-400 transition"
                     >
                       Remove
                     </button>
                   </div>
                 ))}
                 {customFields.length > 0 && (
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-quaternary-500">
                     Members will be asked to fill out these fields when joining the group.
                   </p>
                 )}
               </div>
               
               {createError ? (
-                <p className="rounded-2xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+                <p className="rounded-2xl border border-warning-500/40 bg-warning-500/10 px-4 py-3 text-sm text-warning-200">
                   {createError}
                 </p>
               ) : null}
               {createSuccess ? (
-                <p className="rounded-2xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+                <p className="rounded-2xl border border-success-500/40 bg-success-500/10 px-4 py-3 text-sm text-success-200">
                   {createSuccess}
                 </p>
               ) : null}
               <button
                 type="submit"
                 disabled={isCreatingGroup}
-                className="inline-flex w-full items-center justify-center rounded-full bg-emerald-400/90 px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-emerald-300 active:bg-emerald-300 disabled:cursor-not-allowed disabled:opacity-60 touch-manipulation"
+                className="inline-flex w-full items-center justify-center rounded-full bg-tertiary-500 px-6 py-3 text-sm font-semibold text-primary-800 transition hover:bg-tertiary-600 active:bg-tertiary-600 disabled:cursor-not-allowed disabled:opacity-60 touch-manipulation"
               >
                 {isCreatingGroup ? 'Creating…' : 'Create group'}
               </button>
@@ -1016,33 +1016,33 @@ function App() {
 
             <form
               onSubmit={handleJoinGroup}
-              className="space-y-4 sm:space-y-5 rounded-2xl sm:rounded-3xl border border-slate-800/80 bg-slate-900/80 p-4 sm:p-6 shadow-lg shadow-emerald-500/5"
+              className="space-y-4 sm:space-y-5 rounded-2xl sm:rounded-3xl border border-tertiary-500/80 bg-secondary-700/80 p-4 sm:p-6 shadow-lg shadow-tertiary-500/5"
             >
               <div>
-                <h2 className="text-lg sm:text-xl font-semibold text-white">Join a group</h2>
-                <p className="mt-1 text-xs sm:text-sm text-slate-400">
+                <h2 className="text-lg sm:text-xl font-semibold text-accent-50">Join a group</h2>
+                <p className="mt-1 text-xs sm:text-sm text-quaternary-400">
                   Enter the join code shared by your organizer to hop into the fun.
                 </p>
               </div>
-              <label className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+              <label className="text-xs font-semibold uppercase tracking-wide text-quaternary-400">
                 Join code
                 <input
                   type="text"
                   value={joinCode}
                   onChange={(event) => setJoinCode(event.target.value)}
                   placeholder="Paste the code here"
-                  className="mt-1 w-full rounded-2xl border border-slate-700/80 bg-slate-900 px-4 py-2 text-sm text-white placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/40"
+                  className="mt-1 w-full rounded-2xl border border-tertiary-600/80 bg-secondary-700 px-4 py-2 text-sm text-accent-50 placeholder:text-quaternary-500 focus:border-tertiary-500 focus:outline-none focus:ring-2 focus:ring-tertiary-500/40"
                 />
               </label>
               
               {/* Custom Fields for Joining */}
               {joinGroupFields.length > 0 && (
                 <div className="space-y-3">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-quaternary-400">
                     Please fill out the following:
                   </p>
                   {joinGroupFields.map((field) => (
-                    <label key={field.id} className="block text-xs font-semibold uppercase tracking-wide text-slate-400">
+                    <label key={field.id} className="block text-xs font-semibold uppercase tracking-wide text-quaternary-400">
                       {field.label}
                       <input
                         type="text"
@@ -1051,7 +1051,7 @@ function App() {
                           setJoinResponses({ ...joinResponses, [field.id]: event.target.value });
                         }}
                         placeholder={field.placeholder || `Enter ${field.label.toLowerCase()}`}
-                        className="mt-1 w-full rounded-2xl border border-slate-700/80 bg-slate-900 px-4 py-2 text-sm text-white placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/40"
+                        className="mt-1 w-full rounded-2xl border border-tertiary-600/80 bg-secondary-700 px-4 py-2 text-sm text-accent-50 placeholder:text-quaternary-500 focus:border-tertiary-500 focus:outline-none focus:ring-2 focus:ring-tertiary-500/40"
                       />
                     </label>
                   ))}
@@ -1059,19 +1059,19 @@ function App() {
               )}
               
               {joinError ? (
-                <p className="rounded-2xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+                <p className="rounded-2xl border border-warning-500/40 bg-warning-500/10 px-4 py-3 text-sm text-warning-200">
                   {joinError}
                 </p>
               ) : null}
               {joinSuccess ? (
-                <p className="rounded-2xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+                <p className="rounded-2xl border border-success-500/40 bg-success-500/10 px-4 py-3 text-sm text-success-200">
                   {joinSuccess}
                 </p>
               ) : null}
               <button
                 type="submit"
                 disabled={isJoining}
-                className="inline-flex w-full items-center justify-center rounded-full bg-slate-800 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-700 active:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-60 touch-manipulation"
+                className="inline-flex w-full items-center justify-center rounded-full bg-secondary-600 px-6 py-3 text-sm font-semibold text-accent-50 transition hover:bg-secondary-500 active:bg-secondary-500 disabled:cursor-not-allowed disabled:opacity-60 touch-manipulation"
               >
                 {isJoining ? 'Joining…' : 'Join group'}
               </button>

@@ -296,6 +296,13 @@ function App() {
       return;
     }
 
+    // Validate that at least one custom field is added
+    if (customFields.length === 0) {
+      setCreateError('At least one custom field is required. Please add a custom field before creating the group.');
+      setIsCreatingGroup(false);
+      return;
+    }
+
     // Validate custom fields - if any custom fields are added, they must have labels
     const customFieldsWithEmptyLabels = customFields.filter(
       (field) => !field.label || !field.label.trim()

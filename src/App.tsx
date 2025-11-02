@@ -397,7 +397,8 @@ function App() {
           (field) => !joinResponses[field.id] || !joinResponses[field.id].trim()
         );
         if (missingFields.length > 0) {
-          setJoinError(`Please fill out all required fields: ${missingFields.map(f => f.label).join(', ')}`);
+          const fieldLabels = missingFields.map(f => f.label).join(', ');
+          setJoinError(`Custom field${missingFields.length > 1 ? 's are' : ' is'} required: ${fieldLabels}`);
           setIsJoining(false);
           return;
         }
@@ -520,7 +521,8 @@ function App() {
     );
     
     if (missingFields.length > 0) {
-      setJoinError(`Please fill out all required fields: ${missingFields.map(f => f.label).join(', ')}`);
+      const fieldLabels = missingFields.map(f => f.label).join(', ');
+      setJoinError(`Custom field${missingFields.length > 1 ? 's are' : ' is'} required: ${fieldLabels}`);
       return;
     }
 

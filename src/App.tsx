@@ -555,7 +555,7 @@ function App() {
 
   if (!user) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-primary-800 via-secondary-700 to-primary-800 px-4 py-8">
+      <div className="flex min-h-screen items-center justify-center bg-primary-800 px-4 py-8">
         <div className="w-full max-w-lg space-y-6 sm:space-y-8 rounded-2xl sm:rounded-3xl border border-tertiary-500/50 bg-secondary-700/90 p-6 sm:p-10 text-center shadow-2xl shadow-tertiary-500/20 backdrop-blur">
           <div className="space-y-2 sm:space-y-3">
             <h1 className="text-3xl font-semibold text-accent-50 sm:text-4xl lg:text-5xl">Gift Exchange HQ</h1>
@@ -608,7 +608,7 @@ function App() {
   const drawRanAt = formatTimestamp(selectedGroup?.drawRunAt);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-800 via-secondary-700 to-primary-800 pb-16 text-accent-50">
+    <div className="min-h-screen bg-primary-800 pb-16 text-accent-50">
       <header className="border-b border-tertiary-500/30 bg-primary-800/90 backdrop-blur">
         <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-4 sm:px-6 sm:py-6 sm:flex-row sm:items-center sm:justify-between">
           <div>

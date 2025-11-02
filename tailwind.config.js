@@ -1,4 +1,4 @@
-import { tailwindColors } from '../shared-design-tokens.js';
+import { tailwindColors, tailwindFonts } from '../shared-design-tokens.js';
 
 /** @type {import('tailwindcss').Config} */
 export default {
@@ -6,6 +6,7 @@ export default {
   theme: {
     extend: {
       colors: tailwindColors,
+      fontFamily: tailwindFonts,
     },
   },
   plugins: [],

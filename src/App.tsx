@@ -296,6 +296,16 @@ function App() {
       return;
     }
 
+    // Validate custom fields - if any custom fields are added, they must have labels
+    const customFieldsWithEmptyLabels = customFields.filter(
+      (field) => !field.label || !field.label.trim()
+    );
+    if (customFieldsWithEmptyLabels.length > 0) {
+      setCreateError('Custom field labels are required. Please fill in all custom field labels before creating the group.');
+      setIsCreatingGroup(false);
+      return;
+    }
+
     try {
       const joinCode = generateJoinCode();
       const docRef = await addDoc(collection(db, 'groups'), {
@@ -941,7 +951,7 @@ function App() {
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-semibold uppercase tracking-wide text-quaternary-400">
-                    Custom fields (optional)
+                    Custom fields
                   </label>
                   <button
                     type="button"

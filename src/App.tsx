@@ -680,7 +680,7 @@ function App() {
                 <button
                   type="button"
                   onClick={handleSaveOwnerPreferences}
-                  className="flex-1 inline-flex items-center justify-center rounded-full bg-tertiary-500 px-6 py-3 text-sm font-semibold text-primary-800 transition hover:bg-tertiary-600 active:bg-tertiary-600 touch-manipulation"
+                  className="flex-1 inline-flex items-center justify-center rounded-full bg-tertiary-500 px-6 py-3 text-sm font-semibold text-accent-50 transition hover:bg-tertiary-600 active:bg-tertiary-600 touch-manipulation"
                 >
                   Save Preferences
                 </button>
@@ -1008,7 +1008,7 @@ function App() {
               <button
                 type="submit"
                 disabled={isCreatingGroup}
-                className="inline-flex w-full items-center justify-center rounded-full bg-tertiary-500 px-6 py-3 text-sm font-semibold text-primary-800 transition hover:bg-tertiary-600 active:bg-tertiary-600 disabled:cursor-not-allowed disabled:opacity-60 touch-manipulation"
+                className="inline-flex w-full items-center justify-center rounded-full bg-tertiary-500 px-6 py-3 text-sm font-semibold text-accent-50 transition hover:bg-tertiary-600 active:bg-tertiary-600 disabled:cursor-not-allowed disabled:opacity-60 touch-manipulation"
               >
                 {isCreatingGroup ? 'Creating…' : 'Create group'}
               </button>
@@ -1071,7 +1071,7 @@ function App() {
               <button
                 type="submit"
                 disabled={isJoining}
-                className="inline-flex w-full items-center justify-center rounded-full bg-secondary-600 px-6 py-3 text-sm font-semibold text-accent-50 transition hover:bg-secondary-500 active:bg-secondary-500 disabled:cursor-not-allowed disabled:opacity-60 touch-manipulation"
+                className="inline-flex w-full items-center justify-center rounded-full bg-tertiary-500 px-6 py-3 text-sm font-semibold text-accent-50 transition hover:bg-tertiary-600 active:bg-tertiary-600 disabled:cursor-not-allowed disabled:opacity-60 touch-manipulation"
               >
                 {isJoining ? 'Joining…' : 'Join group'}
               </button>

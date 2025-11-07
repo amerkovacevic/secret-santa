@@ -11,6 +11,8 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+build
+out
 *.local
 
 # Environment variables
@@ -18,6 +20,7 @@ dist-ssr
 .env.local
 .env.development
 .env.production
+.env.test
 .env.*
 !.env.example
 
@@ -25,7 +28,7 @@ dist-ssr
 .firebase
 .firebaserc.local
 
-# Firebase service account keys
+# Firebase service account keys (SECURITY CRITICAL)
 service-account*.json
 firebase-adminsdk*.json
 *-service-account*.json
@@ -45,3 +48,27 @@ firebase-adminsdk*.json
 
 # TypeScript
 *.tsbuildinfo
+tsconfig.tsbuildinfo
+
+# Testing
+coverage
+.nyc_output
+*.lcov
+
+# Cache
+.cache
+.parcel-cache
+.eslintcache
+.stylelintcache
+
+# OS
+Thumbs.db
+Desktop.ini
+.Spotlight-V100
+.Trashes
+
+# Temporary
+*.tmp
+*.temp
+.tmp/
+.temp/

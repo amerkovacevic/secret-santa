@@ -9,5 +9,5 @@ body,
 }
 
 body {
-  @apply bg-primary-800 text-accent-50 font-sans antialiased;
+  @apply bg-accent-50 text-primary-900 font-sans antialiased;
 }
